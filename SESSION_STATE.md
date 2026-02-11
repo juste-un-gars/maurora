@@ -15,7 +15,8 @@
 | 004 | Phase 3 - Configuration & Location | Complete | main |
 | 005 | Phase 4 - Notifications | Complete | main |
 | 006 | Dashboard UI Restructure | Complete | main |
-| 007 | Phase 5 - Polish | In Progress | main |
+| 007 | Phase 5 - Polish | Complete | main |
+| 008 | i18n (FR + EN) | In Progress | main |
 
 ## Build Order Progress
 
@@ -62,9 +63,18 @@
 - [x] Offline mode (validated 2026-02-11)
 - [x] Dark/light theme (validated 2026-02-11)
 - [x] Error handling (validated 2026-02-11)
-- [ ] Security audit
-- [ ] Dependency audit
-- [ ] FINAL REVIEW
+- [x] Security audit (validated 2026-02-11)
+- [x] Dependency audit (validated 2026-02-11)
+- [x] FINAL REVIEW (validated 2026-02-11)
+
+### Post-Phase: i18n (Session 008)
+- [x] strings.xml (EN) — ~80 resources (build OK 2026-02-11)
+- [x] values-fr/strings.xml — traductions FR (build OK 2026-02-11)
+- [x] WeatherData.kt — wmoCodeToDescription → @StringRes (build OK 2026-02-11)
+- [x] DashboardScreen.kt — stringResource() (build OK 2026-02-11)
+- [x] WeatherSection.kt — stringResource() (build OK 2026-02-11)
+- [x] MainActivity.kt — stringResource() + context.getString() (build OK 2026-02-11)
+- [ ] REVIEW: validation manuelle FR/EN sur device (en attente)
 
 ## Known Issues
 - ~~**Launcher icon:** Fixed — adaptive icon XML pointe maintenant vers maurora.png foreground~~

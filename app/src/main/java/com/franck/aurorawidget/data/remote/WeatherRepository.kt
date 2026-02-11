@@ -36,13 +36,13 @@ class WeatherRepository(private val client: HttpClient) {
      */
     suspend fun fetchWeather(latitude: Double, longitude: Double): Result<WeatherData> =
         runCatching {
-            Timber.d("Fetching weather from Open-Meteo for (%.2f, %.2f)...", latitude, longitude)
+            Timber.d("Fetching weather from Open-Meteo...")
             val startTime = System.currentTimeMillis()
 
             val response: WeatherResponse = client.get(BASE_URL) {
                 parameter("latitude", latitude)
                 parameter("longitude", longitude)
-                parameter("current", "cloud_cover")
+                parameter("current", "cloud_cover,temperature_2m,apparent_temperature,weather_code,is_day")
                 parameter("daily", "sunrise,sunset")
                 parameter("timezone", "auto")
                 parameter("forecast_days", 1)
@@ -65,19 +65,20 @@ class WeatherRepository(private val client: HttpClient) {
      */
     suspend fun fetchCloudForecast(latitude: Double, longitude: Double): Result<CloudForecast> =
         runCatching {
-            Timber.d("Fetching 3-day cloud forecast for (%.2f, %.2f)...", latitude, longitude)
+            Timber.d("Fetching 10-day weather forecast...")
             val response: WeatherForecastResponse = client.get(BASE_URL) {
                 parameter("latitude", latitude)
                 parameter("longitude", longitude)
-                parameter("hourly", "cloud_cover")
-                parameter("daily", "sunrise,sunset")
+                parameter("hourly", "cloud_cover,temperature_2m,weather_code")
+                parameter("daily", "sunrise,sunset,temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max")
                 parameter("timezone", "auto")
-                parameter("forecast_days", 3)
+                parameter("forecast_days", 10)
             }.body()
 
             val forecast = response.toCloudForecast()
-            Timber.d("Cloud forecast: %d days, %d hourly points",
-                forecast.dailyCloudCover.size, forecast.hourlyCloudCover.size)
+            Timber.d("Weather forecast: %d days, %d hourly points, %d daily forecasts",
+                forecast.dailyCloudCover.size, forecast.hourlyCloudCover.size,
+                forecast.dailyDates.size)
             forecast
         }.onFailure { e ->
             Timber.e(e, "Failed to fetch cloud forecast")

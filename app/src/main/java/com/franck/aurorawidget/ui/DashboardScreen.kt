@@ -45,6 +45,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.res.stringResource
+import com.franck.aurorawidget.R
 import com.franck.aurorawidget.data.preferences.DashboardData
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -62,12 +64,12 @@ private fun scoreColor(score: Double): Color = when {
     else -> Color(0xFFF44336)        // Red
 }
 
-private fun scoreLabel(score: Double): String = when {
-    score < 5 -> "Nothing to see"
-    score < 20 -> "Unlikely"
-    score < 50 -> "Possible"
-    score < 80 -> "Likely"
-    else -> "Go outside!"
+private fun scoreLabelRes(score: Double): Int = when {
+    score < 5 -> R.string.score_nothing
+    score < 20 -> R.string.score_unlikely
+    score < 50 -> R.string.score_possible
+    score < 80 -> R.string.score_likely
+    else -> R.string.score_go_outside
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -81,17 +83,17 @@ fun DashboardScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Aurora") },
+                title = { Text(stringResource(R.string.dashboard_title)) },
                 actions = {
                     IconButton(onClick = onNavigateToSettings) {
-                        Icon(Icons.Default.Settings, contentDescription = "Settings")
+                        Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.dashboard_settings))
                     }
                 }
             )
         },
         floatingActionButton = {
             FloatingActionButton(onClick = onRefresh) {
-                Icon(Icons.Default.Refresh, contentDescription = "Refresh")
+                Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.dashboard_refresh))
             }
         }
     ) { padding ->
@@ -111,13 +113,13 @@ private fun NoDataState(modifier: Modifier = Modifier) {
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                "No data yet",
+                stringResource(R.string.dashboard_no_data),
                 style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(Modifier.height(8.dp))
             Text(
-                "Tap refresh to fetch aurora data",
+                stringResource(R.string.dashboard_no_data_hint),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -155,7 +157,7 @@ private fun DashboardContent(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    "⏳ Cached data ($ageText ago)",
+                    stringResource(R.string.dashboard_cached_data, ageText),
                     style = MaterialTheme.typography.bodySmall,
                     color = Color(0xFFFF9800)
                 )
@@ -187,7 +189,7 @@ private fun DashboardContent(
                     color = color
                 )
                 Text(
-                    if (data.visibilityScore != null) "Visibility" else "Aurora",
+                    stringResource(if (data.visibilityScore != null) R.string.dashboard_visibility else R.string.dashboard_aurora),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -195,28 +197,31 @@ private fun DashboardContent(
         }
 
         Text(
-            scoreLabel(displayScore),
+            stringResource(scoreLabelRes(displayScore)),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Medium,
             color = color
         )
+
+        // Weather section
+        WeatherSection(data)
 
         // Detail cards
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            InfoCard("Aurora", "%.0f%%".format(data.auroraProbability), Modifier.weight(1f))
-            InfoCard("Kp", data.kp?.let { "%.1f".format(it) } ?: "—", Modifier.weight(1f))
+            InfoCard(stringResource(R.string.dashboard_aurora), "%.0f%%".format(data.auroraProbability), Modifier.weight(1f))
+            InfoCard(stringResource(R.string.dashboard_kp), data.kp?.let { "%.1f".format(it) } ?: "—", Modifier.weight(1f))
         }
 
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            InfoCard("Clouds", data.cloudCover?.let { "$it%" } ?: "—", Modifier.weight(1f))
+            InfoCard(stringResource(R.string.dashboard_clouds), data.cloudCover?.let { "$it%" } ?: "—", Modifier.weight(1f))
             InfoCard(
-                "Sun",
+                stringResource(R.string.dashboard_sun),
                 if (data.sunrise.isNotBlank()) "${formatTime(data.sunrise)} / ${formatTime(data.sunset)}" else "—",
                 Modifier.weight(1f)
             )
@@ -227,7 +232,7 @@ private fun DashboardContent(
         if (kpValues.isNotEmpty()) {
             Spacer(Modifier.height(8.dp))
             Text(
-                "Kp Forecast (3 days)",
+                stringResource(R.string.dashboard_kp_forecast),
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -238,7 +243,7 @@ private fun DashboardContent(
         val dailyClouds = parseCloudForecast(data.cloudForecastDailyCsv)
         if (dailyClouds.isNotEmpty() && kpValues.isNotEmpty()) {
             Text(
-                "3-Day Outlook",
+                stringResource(R.string.dashboard_3day_outlook),
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -263,7 +268,7 @@ private fun DashboardContent(
         // Last update
         Spacer(Modifier.height(8.dp))
         Text(
-            "Updated: ${formatTimestamp(data.lastUpdate)}",
+            stringResource(R.string.dashboard_updated, formatTimestamp(data.lastUpdate)),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -333,9 +338,10 @@ private fun parseCloudForecast(csv: String): List<Int> {
 }
 
 /** Returns day label: "Today", "Tomorrow", or day name. */
+@Composable
 private fun dayLabel(dayOffset: Int): String {
-    if (dayOffset == 0) return "Today"
-    if (dayOffset == 1) return "Tomorrow"
+    if (dayOffset == 0) return stringResource(R.string.day_today)
+    if (dayOffset == 1) return stringResource(R.string.day_tomorrow)
     val cal = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, dayOffset) }
     return SimpleDateFormat("EEE", Locale.getDefault()).format(cal.time)
 }
@@ -443,12 +449,12 @@ private fun DayOutlookCard(
             )
             Spacer(Modifier.height(4.dp))
             Text(
-                "Kp %.1f".format(maxKp),
+                stringResource(R.string.dashboard_kp_format, maxKp),
                 style = MaterialTheme.typography.bodySmall,
                 color = kpBarColor(maxKp)
             )
             Text(
-                "☁ $avgCloud%",
+                stringResource(R.string.dashboard_cloud_format, avgCloud),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

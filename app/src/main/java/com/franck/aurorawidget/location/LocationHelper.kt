@@ -74,7 +74,7 @@ object LocationHelper {
         }
 
         val name = reverseGeocode(context, bestLocation.latitude, bestLocation.longitude)
-        Timber.d("Location found: %s (%.4f, %.4f)", name, bestLocation.latitude, bestLocation.longitude)
+        Timber.d("Location found: %s", name)
 
         return LocationResult(
             latitude = bestLocation.latitude,
@@ -90,14 +90,14 @@ object LocationHelper {
             val addresses = Geocoder(context, Locale.getDefault()).getFromLocation(lat, lon, 1)
             val addr = addresses?.firstOrNull()
             when {
-                addr == null -> "%.2f, %.2f".format(lat, lon)
+                addr == null -> "Unknown location"
                 addr.locality != null -> "${addr.locality}, ${addr.countryName ?: ""}"
                 addr.adminArea != null -> "${addr.adminArea}, ${addr.countryName ?: ""}"
-                else -> addr.countryName ?: "%.2f, %.2f".format(lat, lon)
+                else -> addr.countryName ?: "Unknown location"
             }
         } catch (e: Exception) {
             Timber.w(e, "Reverse geocode failed")
-            "%.2f, %.2f".format(lat, lon)
+            "Unknown location"
         }
     }
 }

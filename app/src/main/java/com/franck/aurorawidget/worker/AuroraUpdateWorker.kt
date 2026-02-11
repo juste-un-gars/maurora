@@ -94,6 +94,28 @@ class AuroraUpdateWorker(
             val cloudDailyCsv = cloudForecast?.dailyCloudCover
                 ?.joinToString(",") ?: ""
 
+            // Serialize hourly forecast: HH:mm,temp,code;...
+            val hourlyForecastCsv = cloudForecast?.let { fc ->
+                val count = minOf(fc.hourlyTimes.size, fc.hourlyTemperatures.size, fc.hourlyWeatherCodes.size)
+                (0 until count).joinToString(";") { i ->
+                    val time = fc.hourlyTimes[i].let { t -> if (t.length >= 16) t.substring(11, 16) else t }
+                    String.format(Locale.US, "%s,%.1f,%d", time, fc.hourlyTemperatures[i], fc.hourlyWeatherCodes[i])
+                }
+            } ?: ""
+
+            // Serialize daily forecast: date,high,low,code,precip;...
+            val dailyForecastCsv = cloudForecast?.let { fc ->
+                val count = minOf(
+                    fc.dailyDates.size, fc.dailyHighs.size, fc.dailyLows.size,
+                    fc.dailyWeatherCodes.size, fc.dailyPrecipProbability.size
+                )
+                (0 until count).joinToString(";") { i ->
+                    String.format(Locale.US, "%s,%.1f,%.1f,%d,%d",
+                        fc.dailyDates[i], fc.dailyHighs[i], fc.dailyLows[i],
+                        fc.dailyWeatherCodes[i], fc.dailyPrecipProbability[i])
+                }
+            } ?: ""
+
             // Cache data for dashboard display
             prefs.saveDashboardData(DashboardData(
                 visibilityScore = visibilityScore,
@@ -104,7 +126,15 @@ class AuroraUpdateWorker(
                 sunset = weatherData?.sunset ?: "",
                 lastUpdate = System.currentTimeMillis(),
                 kpForecastCsv = kpCsv,
-                cloudForecastDailyCsv = cloudDailyCsv
+                cloudForecastDailyCsv = cloudDailyCsv,
+                temperature = weatherData?.temperature,
+                feelsLike = weatherData?.feelsLike,
+                weatherCode = weatherData?.weatherCode,
+                isDay = weatherData?.isDay ?: true,
+                highTemp = cloudForecast?.dailyHighs?.firstOrNull(),
+                lowTemp = cloudForecast?.dailyLows?.firstOrNull(),
+                hourlyForecastCsv = hourlyForecastCsv,
+                dailyForecastCsv = dailyForecastCsv
             ))
 
             updateAllWidgets(displayData)

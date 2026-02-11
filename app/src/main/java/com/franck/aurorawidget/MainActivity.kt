@@ -55,6 +55,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.franck.aurorawidget.data.preferences.DashboardData
@@ -164,16 +165,16 @@ fun ConfigScreen(
                 scope.launch {
                     prefs.saveLocation(loc.latitude, loc.longitude, loc.name)
                     onScheduleWorker(selectedRefresh)
-                    snackbarHostState.showSnackbar("GPS: ${loc.name}")
+                    snackbarHostState.showSnackbar(context.getString(R.string.snack_gps, loc.name))
                 }
             } else {
                 scope.launch {
-                    snackbarHostState.showSnackbar("No GPS location available")
+                    snackbarHostState.showSnackbar(context.getString(R.string.snack_no_gps))
                 }
             }
         } else {
             scope.launch {
-                snackbarHostState.showSnackbar("Location permission denied")
+                snackbarHostState.showSnackbar(context.getString(R.string.snack_permission_denied))
             }
         }
     }
@@ -181,10 +182,10 @@ fun ConfigScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Settings") },
+                title = { Text(stringResource(R.string.settings_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.settings_back))
                     }
                 }
             )
@@ -200,7 +201,7 @@ fun ConfigScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             // --- Location section ---
-            Text("Location", style = MaterialTheme.typography.titleSmall)
+            Text(stringResource(R.string.settings_location), style = MaterialTheme.typography.titleSmall)
 
             // GPS button
             OutlinedButton(
@@ -214,11 +215,11 @@ fun ConfigScreen(
                             scope.launch {
                                 prefs.saveLocation(loc.latitude, loc.longitude, loc.name)
                                 onScheduleWorker(selectedRefresh)
-                                snackbarHostState.showSnackbar("GPS: ${loc.name}")
+                                snackbarHostState.showSnackbar(context.getString(R.string.snack_gps, loc.name))
                             }
                         } else {
                             scope.launch {
-                                snackbarHostState.showSnackbar("No GPS location available")
+                                snackbarHostState.showSnackbar(context.getString(R.string.snack_no_gps))
                             }
                         }
                     } else {
@@ -232,10 +233,10 @@ fun ConfigScreen(
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Use GPS location")
+                Text(stringResource(R.string.settings_use_gps))
             }
 
-            Text("— or enter manually —",
+            Text(stringResource(R.string.settings_or_manual),
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.padding(vertical = 4.dp)
             )
@@ -243,8 +244,8 @@ fun ConfigScreen(
             OutlinedTextField(
                 value = nameText,
                 onValueChange = { nameText = it },
-                label = { Text("Location name") },
-                placeholder = { Text("e.g. Paris, France") },
+                label = { Text(stringResource(R.string.settings_location_name)) },
+                placeholder = { Text(stringResource(R.string.settings_location_placeholder)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
@@ -256,7 +257,7 @@ fun ConfigScreen(
                 OutlinedTextField(
                     value = latText,
                     onValueChange = { latText = it },
-                    label = { Text("Latitude") },
+                    label = { Text(stringResource(R.string.settings_latitude)) },
                     placeholder = { Text("48.86") },
                     modifier = Modifier.weight(1f),
                     singleLine = true,
@@ -265,7 +266,7 @@ fun ConfigScreen(
                 OutlinedTextField(
                     value = lonText,
                     onValueChange = { lonText = it },
-                    label = { Text("Longitude") },
+                    label = { Text(stringResource(R.string.settings_longitude)) },
                     placeholder = { Text("2.35") },
                     modifier = Modifier.weight(1f),
                     singleLine = true,
@@ -281,23 +282,23 @@ fun ConfigScreen(
                         scope.launch {
                             prefs.saveLocation(lat, lon, nameText.ifBlank { "Custom" })
                             onScheduleWorker(selectedRefresh)
-                            snackbarHostState.showSnackbar("Location saved")
+                            snackbarHostState.showSnackbar(context.getString(R.string.snack_location_saved))
                         }
                     } else {
                         scope.launch {
-                            snackbarHostState.showSnackbar("Invalid coordinates")
+                            snackbarHostState.showSnackbar(context.getString(R.string.snack_invalid_coords))
                         }
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Save location")
+                Text(stringResource(R.string.settings_save_location))
             }
 
             Spacer(modifier = Modifier.height(8.dp))
 
             // --- Refresh interval section ---
-            Text("Refresh interval", style = MaterialTheme.typography.titleSmall)
+            Text(stringResource(R.string.settings_refresh_interval), style = MaterialTheme.typography.titleSmall)
 
             val options = listOf(15, 30, 60)
             SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
@@ -309,12 +310,12 @@ fun ConfigScreen(
                             scope.launch {
                                 prefs.saveRefreshMinutes(minutes)
                                 onScheduleWorker(minutes)
-                                snackbarHostState.showSnackbar("Refresh: every $minutes min")
+                                snackbarHostState.showSnackbar(context.getString(R.string.snack_refresh, minutes))
                             }
                         },
                         shape = SegmentedButtonDefaults.itemShape(index, options.size)
                     ) {
-                        Text("${minutes}min")
+                        Text(stringResource(R.string.settings_refresh_format, minutes))
                     }
                 }
             }
@@ -322,14 +323,14 @@ fun ConfigScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             // --- Notifications section ---
-            Text("Notifications", style = MaterialTheme.typography.titleSmall)
+            Text(stringResource(R.string.settings_notifications), style = MaterialTheme.typography.titleSmall)
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Aurora alerts", style = MaterialTheme.typography.bodyMedium)
+                Text(stringResource(R.string.settings_aurora_alerts), style = MaterialTheme.typography.bodyMedium)
                 Switch(
                     checked = notifEnabled,
                     onCheckedChange = { enabled ->
@@ -337,7 +338,7 @@ fun ConfigScreen(
                         scope.launch {
                             prefs.saveNotificationSettings(enabled, notifThreshold.roundToInt())
                             snackbarHostState.showSnackbar(
-                                if (enabled) "Notifications enabled" else "Notifications disabled"
+                                context.getString(if (enabled) R.string.snack_notif_enabled else R.string.snack_notif_disabled)
                             )
                         }
                     }
@@ -346,7 +347,7 @@ fun ConfigScreen(
 
             if (notifEnabled) {
                 Text(
-                    "Alert when visibility exceeds ${notifThreshold.roundToInt()}%",
+                    stringResource(R.string.settings_alert_threshold, notifThreshold.roundToInt()),
                     style = MaterialTheme.typography.bodySmall
                 )
                 Slider(
@@ -366,15 +367,20 @@ fun ConfigScreen(
 
             // --- Current status ---
             settings?.let {
-                Text("Current settings", style = MaterialTheme.typography.titleSmall)
+                Text(stringResource(R.string.settings_current), style = MaterialTheme.typography.titleSmall)
                 val notifStatus = if (it.notificationsEnabled)
-                    "Notifications: ON (threshold ${it.notificationThreshold}%)"
+                    stringResource(R.string.settings_notif_on, it.notificationThreshold)
                 else
-                    "Notifications: OFF"
+                    stringResource(R.string.settings_notif_off)
                 Text(
-                    "${it.locationName} (${it.latitude}, ${it.longitude})\n" +
-                        "Refresh: every ${it.refreshMinutes} min\n" +
-                        notifStatus,
+                    stringResource(
+                        R.string.settings_summary,
+                        it.locationName,
+                        it.latitude.toString(),
+                        it.longitude.toString(),
+                        it.refreshMinutes,
+                        notifStatus
+                    ),
                     style = MaterialTheme.typography.bodyMedium
                 )
             }

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App -->
+    <string name="app_name">Maurora</string>
+
+    <!-- Widget descriptions -->
+    <string name="widget_description">Probabilité d\'observation d\'aurores boréales</string>
+    <string name="widget_medium_description">Visibilité des aurores avec conditions météo</string>
+    <string name="widget_large_description">Visibilité des aurores avec prévisions Kp sur 3 jours</string>
+    <string name="widget_visibility_label">Visibilité</string>
+
+    <!-- Notifications -->
+    <string name="notification_channel_name">Alertes Aurora</string>
+    <string name="notification_channel_description">Alertes lorsque la visibilité des aurores dépasse votre seuil</string>
+    <string name="notification_title">Alerte Aurora</string>
+    <string name="notification_text">Score de visibilité : %1$d%% — Sortez !</string>
+
+    <!-- Score labels -->
+    <string name="score_nothing">Rien à voir</string>
+    <string name="score_unlikely">Peu probable</string>
+    <string name="score_possible">Possible</string>
+    <string name="score_likely">Probable</string>
+    <string name="score_go_outside">Sortez !</string>
+
+    <!-- WMO weather descriptions -->
+    <string name="wmo_clear_sky">Ciel dégagé</string>
+    <string name="wmo_mainly_clear">Plutôt dégagé</string>
+    <string name="wmo_partly_cloudy">Partiellement nuageux</string>
+    <string name="wmo_overcast">Couvert</string>
+    <string name="wmo_fog">Brouillard</string>
+    <string name="wmo_light_drizzle">Bruine légère</string>
+    <string name="wmo_drizzle">Bruine</string>
+    <string name="wmo_dense_drizzle">Bruine dense</string>
+    <string name="wmo_light_rain">Pluie légère</string>
+    <string name="wmo_rain">Pluie</string>
+    <string name="wmo_heavy_rain">Forte pluie</string>
+    <string name="wmo_light_snow">Neige légère</string>
+    <string name="wmo_snow">Neige</string>
+    <string name="wmo_heavy_snow">Forte neige</string>
+    <string name="wmo_snow_grains">Grésil</string>
+    <string name="wmo_rain_showers">Averses de pluie</string>
+    <string name="wmo_snow_showers">Averses de neige</string>
+    <string name="wmo_thunderstorm">Orage</string>
+    <string name="wmo_thunderstorm_hail">Orage avec grêle</string>
+    <string name="wmo_unknown">Inconnu</string>
+
+    <!-- Dashboard -->
+    <string name="dashboard_title">Aurora</string>
+    <string name="dashboard_settings">Paramètres</string>
+    <string name="dashboard_refresh">Actualiser</string>
+    <string name="dashboard_no_data">Pas encore de données</string>
+    <string name="dashboard_no_data_hint">Appuyez sur actualiser pour récupérer les données</string>
+    <string name="dashboard_visibility">Visibilité</string>
+    <string name="dashboard_aurora">Aurora</string>
+    <string name="dashboard_kp">Kp</string>
+    <string name="dashboard_clouds">Nuages</string>
+    <string name="dashboard_sun">Soleil</string>
+    <string name="dashboard_kp_forecast">Prévisions Kp (3 jours)</string>
+    <string name="dashboard_3day_outlook">Aperçu 3 jours</string>
+    <string name="dashboard_updated">Mis à jour : %1$s</string>
+    <string name="dashboard_cached_data">&#x23F3; Données en cache (%1$s)</string>
+    <string name="dashboard_kp_format">Kp %1$.1f</string>
+    <string name="dashboard_cloud_format">&#x2601; %1$d%%</string>
+
+    <!-- Weather section -->
+    <string name="weather_title">Météo</string>
+    <string name="weather_feels_like">Ressenti %1$d°</string>
+    <string name="weather_high_low">Max:%1$d° Min:%2$d°</string>
+
+    <!-- Common / day labels -->
+    <string name="day_today">Auj.</string>
+    <string name="day_tomorrow">Demain</string>
+
+    <!-- Settings screen -->
+    <string name="settings_title">Paramètres</string>
+    <string name="settings_back">Retour</string>
+    <string name="settings_location">Localisation</string>
+    <string name="settings_use_gps">Utiliser le GPS</string>
+    <string name="settings_or_manual">— ou saisir manuellement —</string>
+    <string name="settings_location_name">Nom du lieu</string>
+    <string name="settings_location_placeholder">ex. Paris, France</string>
+    <string name="settings_latitude">Latitude</string>
+    <string name="settings_longitude">Longitude</string>
+    <string name="settings_save_location">Enregistrer la position</string>
+    <string name="settings_refresh_interval">Intervalle de rafraîchissement</string>
+    <string name="settings_refresh_format">%1$dmin</string>
+    <string name="settings_notifications">Notifications</string>
+    <string name="settings_aurora_alerts">Alertes aurora</string>
+    <string name="settings_alert_threshold">Alerte si visibilité supérieure à %1$d%%</string>
+    <string name="settings_current">Paramètres actuels</string>
+    <string name="settings_notif_on">Notifications : ON (seuil %1$d%%)</string>
+    <string name="settings_notif_off">Notifications : OFF</string>
+    <string name="settings_summary">%1$s (%2$s, %3$s)\nActualisation : toutes les %4$d min\n%5$s</string>
+
+    <!-- Snackbar messages -->
+    <string name="snack_gps">GPS : %1$s</string>
+    <string name="snack_no_gps">Aucune position GPS disponible</string>
+    <string name="snack_permission_denied">Permission de localisation refusée</string>
+    <string name="snack_location_saved">Position enregistrée</string>
+    <string name="snack_invalid_coords">Coordonnées invalides</string>
+    <string name="snack_refresh">Actualisation : toutes les %1$d min</string>
+    <string name="snack_notif_enabled">Notifications activées</string>
+    <string name="snack_notif_disabled">Notifications désactivées</string>
+</resources>

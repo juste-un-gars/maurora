@@ -1,12 +1,104 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- App -->
     <string name="app_name">Maurora</string>
+
+    <!-- Widget descriptions -->
     <string name="widget_description">Aurora borealis observation probability</string>
     <string name="widget_medium_description">Aurora visibility with weather conditions</string>
     <string name="widget_large_description">Aurora visibility with 3-day Kp forecast graph</string>
     <string name="widget_visibility_label">Visibility</string>
+
+    <!-- Notifications -->
     <string name="notification_channel_name">Aurora Alerts</string>
     <string name="notification_channel_description">Alerts when aurora visibility exceeds your threshold</string>
     <string name="notification_title">Aurora Alert</string>
     <string name="notification_text">Visibility score: %1$d%% — Go outside!</string>
+
+    <!-- Score labels -->
+    <string name="score_nothing">Nothing to see</string>
+    <string name="score_unlikely">Unlikely</string>
+    <string name="score_possible">Possible</string>
+    <string name="score_likely">Likely</string>
+    <string name="score_go_outside">Go outside!</string>
+
+    <!-- WMO weather descriptions -->
+    <string name="wmo_clear_sky">Clear sky</string>
+    <string name="wmo_mainly_clear">Mainly clear</string>
+    <string name="wmo_partly_cloudy">Partly cloudy</string>
+    <string name="wmo_overcast">Overcast</string>
+    <string name="wmo_fog">Fog</string>
+    <string name="wmo_light_drizzle">Light drizzle</string>
+    <string name="wmo_drizzle">Drizzle</string>
+    <string name="wmo_dense_drizzle">Dense drizzle</string>
+    <string name="wmo_light_rain">Light rain</string>
+    <string name="wmo_rain">Rain</string>
+    <string name="wmo_heavy_rain">Heavy rain</string>
+    <string name="wmo_light_snow">Light snow</string>
+    <string name="wmo_snow">Snow</string>
+    <string name="wmo_heavy_snow">Heavy snow</string>
+    <string name="wmo_snow_grains">Snow grains</string>
+    <string name="wmo_rain_showers">Rain showers</string>
+    <string name="wmo_snow_showers">Snow showers</string>
+    <string name="wmo_thunderstorm">Thunderstorm</string>
+    <string name="wmo_thunderstorm_hail">Thunderstorm with hail</string>
+    <string name="wmo_unknown">Unknown</string>
+
+    <!-- Dashboard -->
+    <string name="dashboard_title">Aurora</string>
+    <string name="dashboard_settings">Settings</string>
+    <string name="dashboard_refresh">Refresh</string>
+    <string name="dashboard_no_data">No data yet</string>
+    <string name="dashboard_no_data_hint">Tap refresh to fetch aurora data</string>
+    <string name="dashboard_visibility">Visibility</string>
+    <string name="dashboard_aurora">Aurora</string>
+    <string name="dashboard_kp">Kp</string>
+    <string name="dashboard_clouds">Clouds</string>
+    <string name="dashboard_sun">Sun</string>
+    <string name="dashboard_kp_forecast">Kp Forecast (3 days)</string>
+    <string name="dashboard_3day_outlook">3-Day Outlook</string>
+    <string name="dashboard_updated">Updated: %1$s</string>
+    <string name="dashboard_cached_data">&#x23F3; Cached data (%1$s ago)</string>
+    <string name="dashboard_kp_format">Kp %1$.1f</string>
+    <string name="dashboard_cloud_format">&#x2601; %1$d%%</string>
+
+    <!-- Weather section -->
+    <string name="weather_title">Weather</string>
+    <string name="weather_feels_like">Feels like %1$d°</string>
+    <string name="weather_high_low">H:%1$d° L:%2$d°</string>
+
+    <!-- Common / day labels -->
+    <string name="day_today">Today</string>
+    <string name="day_tomorrow">Tomorrow</string>
+
+    <!-- Settings screen -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_back">Back</string>
+    <string name="settings_location">Location</string>
+    <string name="settings_use_gps">Use GPS location</string>
+    <string name="settings_or_manual">— or enter manually —</string>
+    <string name="settings_location_name">Location name</string>
+    <string name="settings_location_placeholder">e.g. Paris, France</string>
+    <string name="settings_latitude">Latitude</string>
+    <string name="settings_longitude">Longitude</string>
+    <string name="settings_save_location">Save location</string>
+    <string name="settings_refresh_interval">Refresh interval</string>
+    <string name="settings_refresh_format">%1$dmin</string>
+    <string name="settings_notifications">Notifications</string>
+    <string name="settings_aurora_alerts">Aurora alerts</string>
+    <string name="settings_alert_threshold">Alert when visibility exceeds %1$d%%</string>
+    <string name="settings_current">Current settings</string>
+    <string name="settings_notif_on">Notifications: ON (threshold %1$d%%)</string>
+    <string name="settings_notif_off">Notifications: OFF</string>
+    <string name="settings_summary">%1$s (%2$s, %3$s)\nRefresh: every %4$d min\n%5$s</string>
+
+    <!-- Snackbar messages -->
+    <string name="snack_gps">GPS: %1$s</string>
+    <string name="snack_no_gps">No GPS location available</string>
+    <string name="snack_permission_denied">Location permission denied</string>
+    <string name="snack_location_saved">Location saved</string>
+    <string name="snack_invalid_coords">Invalid coordinates</string>
+    <string name="snack_refresh">Refresh: every %1$d min</string>
+    <string name="snack_notif_enabled">Notifications enabled</string>
+    <string name="snack_notif_disabled">Notifications disabled</string>
 </resources>

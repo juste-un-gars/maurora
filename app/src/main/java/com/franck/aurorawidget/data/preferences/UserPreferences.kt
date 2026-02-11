@@ -40,7 +40,15 @@ data class DashboardData(
     val sunset: String = "",
     val lastUpdate: Long = 0L,
     val kpForecastCsv: String = "",
-    val cloudForecastDailyCsv: String = ""
+    val cloudForecastDailyCsv: String = "",
+    val temperature: Double? = null,
+    val feelsLike: Double? = null,
+    val weatherCode: Int? = null,
+    val isDay: Boolean = true,
+    val highTemp: Double? = null,
+    val lowTemp: Double? = null,
+    val hourlyForecastCsv: String = "",
+    val dailyForecastCsv: String = ""
 )
 
 /**
@@ -87,6 +95,14 @@ class UserPreferences(val context: Context) {
         val DASH_LAST_UPDATE = longPreferencesKey("dash_last_update")
         val DASH_KP_FORECAST = stringPreferencesKey("dash_kp_forecast")
         val DASH_CLOUD_FORECAST_DAILY = stringPreferencesKey("dash_cloud_forecast_daily")
+        val DASH_TEMPERATURE = stringPreferencesKey("dash_temperature")
+        val DASH_FEELS_LIKE = stringPreferencesKey("dash_feels_like")
+        val DASH_WEATHER_CODE = intPreferencesKey("dash_weather_code")
+        val DASH_IS_DAY = stringPreferencesKey("dash_is_day")
+        val DASH_HIGH_TEMP = stringPreferencesKey("dash_high_temp")
+        val DASH_LOW_TEMP = stringPreferencesKey("dash_low_temp")
+        val DASH_HOURLY_FORECAST = stringPreferencesKey("dash_hourly_forecast")
+        val DASH_DAILY_FORECAST = stringPreferencesKey("dash_daily_forecast")
     }
 
     /** Observe settings as a Flow. */
@@ -113,7 +129,7 @@ class UserPreferences(val context: Context) {
             prefs[Keys.LONGITUDE] = longitude
             prefs[Keys.LOCATION_NAME] = name
         }
-        Timber.d("Location saved: %s (%.4f, %.4f)", name, latitude, longitude)
+        Timber.d("Location saved: %s", name)
     }
 
     /** Save refresh interval. */
@@ -152,7 +168,15 @@ class UserPreferences(val context: Context) {
             sunset = prefs[Keys.DASH_SUNSET] ?: "",
             lastUpdate = prefs[Keys.DASH_LAST_UPDATE] ?: 0L,
             kpForecastCsv = prefs[Keys.DASH_KP_FORECAST] ?: "",
-            cloudForecastDailyCsv = prefs[Keys.DASH_CLOUD_FORECAST_DAILY] ?: ""
+            cloudForecastDailyCsv = prefs[Keys.DASH_CLOUD_FORECAST_DAILY] ?: "",
+            temperature = prefs[Keys.DASH_TEMPERATURE]?.toDoubleOrNull(),
+            feelsLike = prefs[Keys.DASH_FEELS_LIKE]?.toDoubleOrNull(),
+            weatherCode = prefs[Keys.DASH_WEATHER_CODE],
+            isDay = prefs[Keys.DASH_IS_DAY]?.toBooleanStrictOrNull() ?: true,
+            highTemp = prefs[Keys.DASH_HIGH_TEMP]?.toDoubleOrNull(),
+            lowTemp = prefs[Keys.DASH_LOW_TEMP]?.toDoubleOrNull(),
+            hourlyForecastCsv = prefs[Keys.DASH_HOURLY_FORECAST] ?: "",
+            dailyForecastCsv = prefs[Keys.DASH_DAILY_FORECAST] ?: ""
         )
     }
 
@@ -171,10 +195,19 @@ class UserPreferences(val context: Context) {
             prefs[Keys.DASH_LAST_UPDATE] = data.lastUpdate
             prefs[Keys.DASH_KP_FORECAST] = data.kpForecastCsv
             prefs[Keys.DASH_CLOUD_FORECAST_DAILY] = data.cloudForecastDailyCsv
+            prefs[Keys.DASH_TEMPERATURE] = data.temperature?.toString() ?: ""
+            prefs[Keys.DASH_FEELS_LIKE] = data.feelsLike?.toString() ?: ""
+            data.weatherCode?.let { prefs[Keys.DASH_WEATHER_CODE] = it }
+            prefs[Keys.DASH_IS_DAY] = data.isDay.toString()
+            prefs[Keys.DASH_HIGH_TEMP] = data.highTemp?.toString() ?: ""
+            prefs[Keys.DASH_LOW_TEMP] = data.lowTemp?.toString() ?: ""
+            prefs[Keys.DASH_HOURLY_FORECAST] = data.hourlyForecastCsv
+            prefs[Keys.DASH_DAILY_FORECAST] = data.dailyForecastCsv
         }
-        Timber.d("Dashboard data cached: visibility=%s, aurora=%.1f%%",
+        Timber.d("Dashboard data cached: visibility=%s, aurora=%.1f%%, temp=%s",
             data.visibilityScore?.let { "%.1f%%".format(it) } ?: "N/A",
-            data.auroraProbability
+            data.auroraProbability,
+            data.temperature?.let { "%.1f°".format(it) } ?: "N/A"
         )
     }
 

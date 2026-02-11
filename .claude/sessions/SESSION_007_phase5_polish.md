@@ -3,7 +3,7 @@
 ## Meta
 - **Date:** 2026-02-11
 - **Goal:** Final polish — widget 4x2, forecasts, offline, theme, error handling, audits
-- **Status:** In Progress
+- **Status:** Complete
 
 ## Completed Modules
 | Module | Validated | Date |
@@ -13,11 +13,14 @@
 | Offline mode (cache fallback) | Yes | 2026-02-11 |
 | Dark/light theme adaptive | Yes | 2026-02-11 |
 | Error handling | Yes | 2026-02-11 |
+| Security audit | Yes | 2026-02-11 |
+| Dependency audit | Yes | 2026-02-11 |
+| FINAL REVIEW | Yes | 2026-02-11 |
 
 ## Next Modules (Prioritized)
-1. [ ] Security audit
-2. [ ] Dependency audit
-3. [ ] FINAL REVIEW
+1. [x] Security audit
+2. [x] Dependency audit
+3. [x] FINAL REVIEW
 
 ## Technical Decisions
 - **Kp graph (widget):** Bitmap rendered via Canvas → ImageView (RemoteViews limitation)
@@ -48,8 +51,26 @@
 - `res/values/strings.xml` — widget_large_description
 - `res/values-night/themes.xml` — **New** — Dark XML theme
 
+## Security Audit Fixes Applied
+- `android:allowBackup="false"` in manifest
+- `network_security_config.xml` created — blocks all cleartext traffic
+- GPS coordinates removed from all Timber log messages (defense-in-depth)
+- `reverseGeocode` fallback changed from coordinates to "Unknown location"
+
+## Dependency Audit Summary
+- All 18 dependencies current and appropriate
+- Version catalog (`libs.versions.toml`) well configured
+- No vulnerabilities, no duplicates, no suspicious deps
+- AGP 8.7.3, Kotlin 2.1.0, Ktor 3.0.3, Compose BOM 2024.12.01
+
+## Final Review Results
+- Build: PASS (clean assembleDebug)
+- Lint: PASS (0 errors, 58 warnings non-bloquants)
+- Tests: PASS (18/18)
+- Code quality: Excellent (all files < 500 lines, proper architecture)
+- Total codebase: ~3,262 lines Kotlin
+
 ## Handoff Notes
-- 5/8 Phase 5 modules done
-- Remaining: security audit, dependency audit, final review
+- ALL Phase 5 modules done — project COMPLETE
 - Known: French locale CSV bug fixed (Locale.US for serialization)
 - All data APIs working: OVATION, Kp index, Kp forecast, Open-Meteo current + 3-day forecast

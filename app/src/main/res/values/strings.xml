@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Maurora</string>
+    <string name="widget_description">Aurora borealis observation probability</string>
+    <string name="widget_medium_description">Aurora visibility with weather conditions</string>
+    <string name="widget_visibility_label">Visibility</string>
+</resources>

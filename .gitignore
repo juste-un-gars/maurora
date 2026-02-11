@@ -1,0 +1,32 @@
+# Android/Gradle
+.gradle/
+build/
+local.properties
+*.apk
+*.aab
+*.ap_
+
+# IDE
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+nul
+
+# Secrets
+*.key
+*.pem
+*.jks
+*.keystore
+
+# Logs
+logs/
+*.log
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# Cache
+.cache/

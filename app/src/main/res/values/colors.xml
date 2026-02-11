@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Aurora score color coding -->
+    <color name="aurora_none">#9E9E9E</color>       <!-- 0-5%: Gray -->
+    <color name="aurora_unlikely">#4CAF50</color>    <!-- 5-20%: Green -->
+    <color name="aurora_possible">#FFEB3B</color>    <!-- 20-50%: Yellow -->
+    <color name="aurora_likely">#FF9800</color>      <!-- 50-80%: Orange -->
+    <color name="aurora_go_outside">#F44336</color>  <!-- 80-100%: Red -->
+
+    <!-- Widget background -->
+    <color name="widget_background">#CC1B1B2F</color>  <!-- Dark semi-transparent -->
+    <color name="widget_text">#FFFFFF</color>
+    <color name="widget_text_secondary">#B0BEC5</color>
+</resources>

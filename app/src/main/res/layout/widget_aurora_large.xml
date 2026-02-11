@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Widget 4x2: Visibility score + details + Kp 3-day forecast graph -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/widget_background"
+    android:orientation="horizontal"
+    android:padding="8dp">
+
+    <!-- Left column: Score + details -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tv_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Aurora"
+            android:textColor="@color/widget_text_secondary"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/tv_visibility_score"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="--"
+            android:textColor="@color/widget_text"
+            android:textSize="36sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tv_score_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/widget_visibility_label"
+            android:textColor="@color/widget_text_secondary"
+            android:textSize="11sp" />
+
+        <!-- Cloud + Kp row -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tv_cloud_cover"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="☁ --%"
+                android:textColor="@color/widget_text_secondary"
+                android:textSize="11sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:text="·"
+                android:textColor="@color/widget_text_secondary"
+                android:textSize="11sp" />
+
+            <TextView
+                android:id="@+id/tv_kp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Kp --"
+                android:textColor="@color/widget_text_secondary"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tv_last_update"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="--:--"
+            android:textColor="@color/widget_text_secondary"
+            android:textSize="10sp" />
+    </LinearLayout>
+
+    <!-- Right column: Kp 3-day forecast graph -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tv_kp_graph_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Kp Forecast (3 days)"
+            android:textColor="@color/widget_text_secondary"
+            android:textSize="10sp" />
+
+        <ImageView
+            android:id="@+id/iv_kp_graph"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginTop="4dp"
+            android:scaleType="fitXY"
+            android:contentDescription="Kp forecast graph" />
+    </LinearLayout>
+
+</LinearLayout>

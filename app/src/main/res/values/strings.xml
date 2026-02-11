@@ -3,5 +3,10 @@
     <string name="app_name">Maurora</string>
     <string name="widget_description">Aurora borealis observation probability</string>
     <string name="widget_medium_description">Aurora visibility with weather conditions</string>
+    <string name="widget_large_description">Aurora visibility with 3-day Kp forecast graph</string>
     <string name="widget_visibility_label">Visibility</string>
+    <string name="notification_channel_name">Aurora Alerts</string>
+    <string name="notification_channel_description">Alerts when aurora visibility exceeds your threshold</string>
+    <string name="notification_title">Aurora Alert</string>
+    <string name="notification_text">Visibility score: %1$d%% — Go outside!</string>
 </resources>

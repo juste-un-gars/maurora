@@ -4,8 +4,11 @@
  */
 package com.franck.aurorawidget.data.remote
 
+import com.franck.aurorawidget.data.model.CloudForecast
 import com.franck.aurorawidget.data.model.WeatherData
+import com.franck.aurorawidget.data.model.WeatherForecastResponse
 import com.franck.aurorawidget.data.model.WeatherResponse
+import com.franck.aurorawidget.data.model.toCloudForecast
 import com.franck.aurorawidget.data.model.toWeatherData
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -54,5 +57,29 @@ class WeatherRepository(private val client: HttpClient) {
             data
         }.onFailure { e ->
             Timber.e(e, "Failed to fetch weather data")
+        }
+
+    /**
+     * Fetches 3-day cloud cover forecast (hourly).
+     * @return [Result] containing [CloudForecast] with daily averages and hourly values.
+     */
+    suspend fun fetchCloudForecast(latitude: Double, longitude: Double): Result<CloudForecast> =
+        runCatching {
+            Timber.d("Fetching 3-day cloud forecast for (%.2f, %.2f)...", latitude, longitude)
+            val response: WeatherForecastResponse = client.get(BASE_URL) {
+                parameter("latitude", latitude)
+                parameter("longitude", longitude)
+                parameter("hourly", "cloud_cover")
+                parameter("daily", "sunrise,sunset")
+                parameter("timezone", "auto")
+                parameter("forecast_days", 3)
+            }.body()
+
+            val forecast = response.toCloudForecast()
+            Timber.d("Cloud forecast: %d days, %d hourly points",
+                forecast.dailyCloudCover.size, forecast.hourlyCloudCover.size)
+            forecast
+        }.onFailure { e ->
+            Timber.e(e, "Failed to fetch cloud forecast")
         }
 }

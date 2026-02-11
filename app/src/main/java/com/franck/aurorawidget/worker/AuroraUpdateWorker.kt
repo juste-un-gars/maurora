@@ -7,6 +7,8 @@ package com.franck.aurorawidget.worker
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
@@ -14,15 +16,20 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.franck.aurorawidget.data.calculator.AuroraCalculator
+import com.franck.aurorawidget.data.preferences.DashboardData
 import com.franck.aurorawidget.data.preferences.UserPreferences
 import com.franck.aurorawidget.data.remote.HttpClientFactory
 import com.franck.aurorawidget.data.remote.NoaaRepository
 import com.franck.aurorawidget.data.remote.WeatherRepository
+import com.franck.aurorawidget.notification.AuroraNotifier
+import com.franck.aurorawidget.widget.AuroraLargeWidgetProvider
 import com.franck.aurorawidget.widget.AuroraMediumWidgetProvider
 import com.franck.aurorawidget.widget.AuroraWidgetProvider
 import com.franck.aurorawidget.widget.WidgetDisplayData
 import timber.log.Timber
+import java.util.Locale
 import java.util.concurrent.TimeUnit
+import kotlin.coroutines.cancellation.CancellationException
 
 class AuroraUpdateWorker(
     context: Context,
@@ -33,22 +40,30 @@ class AuroraUpdateWorker(
         Timber.d("AuroraUpdateWorker started")
         val startTime = System.currentTimeMillis()
 
+        val prefs = UserPreferences(applicationContext)
+
+        // Early network check — use cache if offline
+        if (!isNetworkAvailable()) {
+            Timber.w("No network — using cached data")
+            updateWidgetsFromCache(prefs)
+            return Result.success()
+        }
+
         val client = HttpClientFactory.create()
         return try {
             val noaaRepo = NoaaRepository(client)
             val weatherRepo = WeatherRepository(client)
 
-            // Read user location from DataStore
-            val prefs = UserPreferences(applicationContext)
             val settings = prefs.getSettings()
             val latitude = settings.latitude
             val longitude = settings.longitude
 
             // Fetch all data (aurora is required, weather/kp are optional)
             val ovationResult = noaaRepo.fetchOvationData()
-            val ovationData = ovationResult.getOrElse { e ->
-                Timber.e(e, "Worker failed to fetch OVATION data")
-                return Result.retry()
+            val ovationData = ovationResult.getOrElse {
+                Timber.w("OVATION fetch failed — falling back to cached data")
+                updateWidgetsFromCache(prefs)
+                return Result.success()
             }
 
             val auroraProbability = AuroraCalculator.getAuroraProbability(
@@ -57,6 +72,8 @@ class AuroraUpdateWorker(
 
             val weatherData = weatherRepo.fetchWeather(latitude, longitude).getOrNull()
             val kpData = noaaRepo.fetchKpIndex().getOrNull()
+            val kpForecast = noaaRepo.fetchKpForecast().getOrNull()
+            val cloudForecast = weatherRepo.fetchCloudForecast(latitude, longitude).getOrNull()
 
             // Compute combined visibility score if weather available
             val visibilityScore = weatherData?.let {
@@ -67,10 +84,35 @@ class AuroraUpdateWorker(
                 visibilityScore = visibilityScore,
                 auroraProbability = auroraProbability,
                 cloudCover = weatherData?.cloudCover,
-                kp = kpData?.value
+                kp = kpData?.value,
+                kpForecast = kpForecast
             )
 
+            // Serialize forecasts as CSV for dashboard cache
+            val kpCsv = kpForecast?.points
+                ?.joinToString(",") { String.format(Locale.US, "%.2f", it.kp) } ?: ""
+            val cloudDailyCsv = cloudForecast?.dailyCloudCover
+                ?.joinToString(",") ?: ""
+
+            // Cache data for dashboard display
+            prefs.saveDashboardData(DashboardData(
+                visibilityScore = visibilityScore,
+                auroraProbability = auroraProbability,
+                cloudCover = weatherData?.cloudCover,
+                kp = kpData?.value,
+                sunrise = weatherData?.sunrise ?: "",
+                sunset = weatherData?.sunset ?: "",
+                lastUpdate = System.currentTimeMillis(),
+                kpForecastCsv = kpCsv,
+                cloudForecastDailyCsv = cloudDailyCsv
+            ))
+
             updateAllWidgets(displayData)
+
+            // Check if aurora alert notification should be sent
+            AuroraNotifier.notifyIfNeeded(
+                applicationContext, visibilityScore, auroraProbability, settings, prefs
+            )
 
             val duration = System.currentTimeMillis() - startTime
             Timber.d(
@@ -81,9 +123,12 @@ class AuroraUpdateWorker(
                 kpData?.value?.let { "%.1f".format(it) } ?: "N/A"
             )
             Result.success()
+        } catch (e: CancellationException) {
+            throw e // Never swallow cancellation
         } catch (e: Exception) {
-            Timber.e(e, "AuroraUpdateWorker unexpected error")
-            Result.retry()
+            Timber.e(e, "AuroraUpdateWorker unexpected error: %s", e.message)
+            updateWidgetsFromCache(prefs)
+            Result.success() // Don't retry aggressively, periodic will re-run
         } finally {
             client.close()
         }
@@ -109,6 +154,40 @@ class AuroraUpdateWorker(
         Timber.d("Updating %d medium widget(s)", mediumIds.size)
         for (id in mediumIds) {
             AuroraWidgetProvider.updateMediumWidget(context, appWidgetManager, id, data)
+        }
+
+        // Update large widgets (4x2)
+        val largeIds = appWidgetManager.getAppWidgetIds(
+            ComponentName(context, AuroraLargeWidgetProvider::class.java)
+        )
+        Timber.d("Updating %d large widget(s)", largeIds.size)
+        for (id in largeIds) {
+            AuroraWidgetProvider.updateLargeWidget(context, appWidgetManager, id, data)
+        }
+    }
+
+    private fun isNetworkAvailable(): Boolean {
+        val cm = applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val network = cm.activeNetwork ?: return false
+        val caps = cm.getNetworkCapabilities(network) ?: return false
+        return caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+    }
+
+    private suspend fun updateWidgetsFromCache(prefs: UserPreferences) {
+        val cached = prefs.getDashboardData()
+        if (cached.lastUpdate > 0L) {
+            val cachedDisplay = WidgetDisplayData(
+                visibilityScore = cached.visibilityScore,
+                auroraProbability = cached.auroraProbability,
+                cloudCover = cached.cloudCover,
+                kp = cached.kp,
+                isCached = true
+            )
+            updateAllWidgets(cachedDisplay)
+            val ageMin = (System.currentTimeMillis() - cached.lastUpdate) / 60_000
+            Timber.d("Widgets updated from cache (age: %d min)", ageMin)
+        } else {
+            Timber.w("No cached data available — widgets show placeholder")
         }
     }
 

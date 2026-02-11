@@ -19,6 +19,7 @@ object HttpClientFactory {
             config {
                 connectTimeout(15, TimeUnit.SECONDS)
                 readTimeout(30, TimeUnit.SECONDS)
+                writeTimeout(15, TimeUnit.SECONDS)
             }
         }
         install(ContentNegotiation) {

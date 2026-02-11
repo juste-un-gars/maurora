@@ -50,3 +50,38 @@ fun WeatherResponse.toWeatherData(): WeatherData = WeatherData(
     sunset = daily.sunset.firstOrNull().orEmpty(),
     fetchTime = current.time
 )
+
+/**
+ * Raw JSON response from Open-Meteo with hourly cloud cover for multi-day forecast.
+ */
+@Serializable
+data class WeatherForecastResponse(
+    val hourly: HourlyWeather,
+    val daily: DailyWeather
+)
+
+@Serializable
+data class HourlyWeather(
+    val time: List<String>,
+    @SerialName("cloud_cover") val cloudCover: List<Int>
+)
+
+/**
+ * Processed 3-day cloud forecast: average cloud cover per day.
+ * @property dailyCloudCover List of daily average cloud cover (0-100), one per day
+ * @property hourlyCloudCover All hourly values (for detailed chart)
+ */
+data class CloudForecast(
+    val dailyCloudCover: List<Int>,
+    val hourlyCloudCover: List<Int>
+)
+
+/** Converts forecast response to domain model with daily averages. */
+fun WeatherForecastResponse.toCloudForecast(): CloudForecast {
+    val hourly = hourly.cloudCover
+    // Group by day (24 hours each)
+    val dailyAvg = hourly.chunked(24).map { dayHours ->
+        dayHours.average().toInt()
+    }
+    return CloudForecast(dailyCloudCover = dailyAvg, hourlyCloudCover = hourly)
+}

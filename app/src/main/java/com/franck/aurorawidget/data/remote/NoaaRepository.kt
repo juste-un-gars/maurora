@@ -5,6 +5,8 @@
 package com.franck.aurorawidget.data.remote
 
 import com.franck.aurorawidget.data.model.KpData
+import com.franck.aurorawidget.data.model.KpForecast
+import com.franck.aurorawidget.data.model.KpForecastPoint
 import com.franck.aurorawidget.data.model.OvationData
 import com.franck.aurorawidget.data.model.OvationResponse
 import com.franck.aurorawidget.data.model.toOvationData
@@ -24,6 +26,8 @@ class NoaaRepository(private val client: HttpClient) {
             "https://services.swpc.noaa.gov/json/ovation_aurora_latest.json"
         private const val KP_URL =
             "https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json"
+        private const val KP_FORECAST_URL =
+            "https://services.swpc.noaa.gov/products/noaa-planetary-k-index-forecast.json"
     }
 
     /**
@@ -65,5 +69,30 @@ class NoaaRepository(private val client: HttpClient) {
         KpData(value = kp, timeTag = timeTag)
     }.onFailure { e ->
         Timber.e(e, "Failed to fetch Kp index")
+    }
+
+    /**
+     * Fetches the 3-day Kp forecast.
+     * Returns points from now onward (estimated + predicted), up to 72h.
+     * @return [Result] containing [KpForecast] with forecast points.
+     */
+    suspend fun fetchKpForecast(): Result<KpForecast> = runCatching {
+        Timber.d("Fetching Kp forecast from NOAA...")
+        val response: List<List<String?>> = client.get(KP_FORECAST_URL).body()
+
+        // First row is headers, skip it
+        val points = response.drop(1).mapNotNull { row ->
+            val timeTag = row.getOrNull(0) ?: return@mapNotNull null
+            val kp = row.getOrNull(1)?.toDoubleOrNull() ?: return@mapNotNull null
+            val type = row.getOrNull(2) ?: "unknown"
+            KpForecastPoint(timeTag = timeTag, kp = kp, type = type)
+        }
+
+        // Keep only estimated + predicted (future data)
+        val futurePoints = points.filter { it.type != "observed" }
+        Timber.d("Kp forecast fetched: %d total, %d future points", points.size, futurePoints.size)
+        KpForecast(points = futurePoints)
+    }.onFailure { e ->
+        Timber.e(e, "Failed to fetch Kp forecast")
     }
 }

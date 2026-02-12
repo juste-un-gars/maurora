@@ -67,7 +67,9 @@ data class UserSettings(
     val useGps: Boolean = false,
     val notificationsEnabled: Boolean = false,
     val notificationThreshold: Int = 50,
-    val lastNotificationTime: Long = 0L
+    val lastNotificationTime: Long = 0L,
+    val language: String = "system",  // "system", "fr", "en"
+    val theme: String = "system"      // "system", "light", "dark"
 )
 
 /**
@@ -84,6 +86,8 @@ class UserPreferences(val context: Context) {
         val NOTIFICATIONS_ENABLED = stringPreferencesKey("notifications_enabled")
         val NOTIFICATION_THRESHOLD = intPreferencesKey("notification_threshold")
         val LAST_NOTIFICATION_TIME = longPreferencesKey("last_notification_time")
+        val LANGUAGE = stringPreferencesKey("language")
+        val THEME = stringPreferencesKey("theme")
 
         // Dashboard cache
         val DASH_VISIBILITY = stringPreferencesKey("dash_visibility") // nullable Double as string
@@ -115,7 +119,9 @@ class UserPreferences(val context: Context) {
             useGps = prefs[Keys.USE_GPS]?.toBooleanStrictOrNull() ?: false,
             notificationsEnabled = prefs[Keys.NOTIFICATIONS_ENABLED]?.toBooleanStrictOrNull() ?: false,
             notificationThreshold = prefs[Keys.NOTIFICATION_THRESHOLD] ?: 50,
-            lastNotificationTime = prefs[Keys.LAST_NOTIFICATION_TIME] ?: 0L
+            lastNotificationTime = prefs[Keys.LAST_NOTIFICATION_TIME] ?: 0L,
+            language = prefs[Keys.LANGUAGE] ?: "system",
+            theme = prefs[Keys.THEME] ?: "system"
         )
     }
 
@@ -155,6 +161,22 @@ class UserPreferences(val context: Context) {
             prefs[Keys.NOTIFICATION_THRESHOLD] = threshold
         }
         Timber.d("Notifications saved: enabled=%s, threshold=%d%%", enabled, threshold)
+    }
+
+    /** Save language preference. */
+    suspend fun saveLanguage(language: String) {
+        context.dataStore.edit { prefs ->
+            prefs[Keys.LANGUAGE] = language
+        }
+        Timber.d("Language saved: %s", language)
+    }
+
+    /** Save theme preference. */
+    suspend fun saveTheme(theme: String) {
+        context.dataStore.edit { prefs ->
+            prefs[Keys.THEME] = theme
+        }
+        Timber.d("Theme saved: %s", theme)
     }
 
     /** Observe cached dashboard data as a Flow. */

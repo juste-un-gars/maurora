@@ -6,11 +6,14 @@ package com.franck.aurorawidget
 
 import android.Manifest
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -24,8 +27,11 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -58,14 +64,22 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.core.os.LocaleListCompat
+import com.franck.aurorawidget.data.model.GeocodingResult
 import com.franck.aurorawidget.data.preferences.DashboardData
 import com.franck.aurorawidget.data.preferences.UserPreferences
+import com.franck.aurorawidget.data.remote.GeocodingRepository
+import com.franck.aurorawidget.data.remote.HttpClientFactory
 import com.franck.aurorawidget.location.LocationHelper
 import com.franck.aurorawidget.ui.DashboardScreen
 import com.franck.aurorawidget.ui.theme.AuroraTheme
 import com.franck.aurorawidget.worker.AuroraUpdateWorker
 import kotlin.math.roundToInt
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 /** Simple two-screen navigation without a library. */
 sealed class Screen {
@@ -73,30 +87,41 @@ sealed class Screen {
     data object Settings : Screen()
 }
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val prefs = UserPreferences(applicationContext)
 
+        // Apply saved language before setContent
+        val savedSettings = runBlocking { prefs.settingsFlow.first() }
+        applyLanguage(savedSettings.language)
+
         setContent {
-            AuroraTheme {
+            val settings by prefs.settingsFlow.collectAsState(initial = savedSettings)
+
+            val darkTheme = when (settings.theme) {
+                "light" -> false
+                "dark" -> true
+                else -> isSystemInDarkTheme()
+            }
+
+            AuroraTheme(darkTheme = darkTheme) {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     var currentScreen by remember { mutableStateOf<Screen>(Screen.Dashboard) }
 
                     val dashboardData by prefs.dashboardFlow.collectAsState(initial = DashboardData())
-                    val settings by prefs.settingsFlow.collectAsState(initial = null)
 
                     when (currentScreen) {
                         Screen.Dashboard -> {
                             DashboardScreen(
                                 data = dashboardData,
-                                locationName = settings?.locationName ?: "",
+                                locationName = settings.locationName,
                                 onNavigateToSettings = { currentScreen = Screen.Settings },
                                 onRefresh = {
                                     AuroraUpdateWorker.schedule(
                                         applicationContext,
-                                        (settings?.refreshMinutes ?: 30).toLong()
+                                        settings.refreshMinutes.toLong()
                                     )
                                 }
                             )
@@ -108,6 +133,7 @@ class MainActivity : ComponentActivity() {
                                 onScheduleWorker = { minutes ->
                                     AuroraUpdateWorker.schedule(applicationContext, minutes.toLong())
                                 },
+                                onLanguageChange = { lang -> applyLanguage(lang) },
                                 onNavigateBack = { currentScreen = Screen.Dashboard }
                             )
                         }
@@ -116,6 +142,15 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    private fun applyLanguage(lang: String) {
+        val locales = if (lang == "system") {
+            LocaleListCompat.getEmptyLocaleList()
+        } else {
+            LocaleListCompat.forLanguageTags(lang)
+        }
+        AppCompatDelegate.setApplicationLocales(locales)
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -123,6 +158,7 @@ class MainActivity : ComponentActivity() {
 fun ConfigScreen(
     prefs: UserPreferences,
     onScheduleWorker: (Int) -> Unit,
+    onLanguageChange: (String) -> Unit,
     onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -137,6 +173,15 @@ fun ConfigScreen(
     var selectedRefresh by remember { mutableIntStateOf(30) }
     var notifEnabled by remember { mutableStateOf(false) }
     var notifThreshold by remember { mutableFloatStateOf(50f) }
+    var selectedLanguage by remember { mutableStateOf("system") }
+    var selectedTheme by remember { mutableStateOf("system") }
+
+    // City search state
+    var cityQuery by remember { mutableStateOf("") }
+    var cityResults by remember { mutableStateOf<List<GeocodingResult>>(emptyList()) }
+    var citySearching by remember { mutableStateOf(false) }
+    var citySearchJob by remember { mutableStateOf<Job?>(null) }
+    val geocodingRepo = remember { GeocodingRepository(HttpClientFactory.create()) }
 
     // Load saved values once available
     LaunchedEffect(settings) {
@@ -147,6 +192,8 @@ fun ConfigScreen(
             selectedRefresh = it.refreshMinutes
             notifEnabled = it.notificationsEnabled
             notifThreshold = it.notificationThreshold.toFloat()
+            selectedLanguage = it.language
+            selectedTheme = it.theme
         }
     }
 
@@ -202,6 +249,88 @@ fun ConfigScreen(
         ) {
             // --- Location section ---
             Text(stringResource(R.string.settings_location), style = MaterialTheme.typography.titleSmall)
+
+            // City search field
+            OutlinedTextField(
+                value = cityQuery,
+                onValueChange = { query ->
+                    cityQuery = query
+                    citySearchJob?.cancel()
+                    if (query.length >= 2) {
+                        citySearching = true
+                        citySearchJob = scope.launch {
+                            delay(500) // debounce
+                            geocodingRepo.searchCities(query).onSuccess { results ->
+                                cityResults = results
+                            }.onFailure {
+                                cityResults = emptyList()
+                            }
+                            citySearching = false
+                        }
+                    } else {
+                        cityResults = emptyList()
+                        citySearching = false
+                    }
+                },
+                label = { Text(stringResource(R.string.settings_search_city)) },
+                placeholder = { Text(stringResource(R.string.settings_search_placeholder)) },
+                trailingIcon = {
+                    if (citySearching) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.padding(4.dp),
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Icon(Icons.Default.Search, contentDescription = null)
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+
+            // Search results
+            if (cityQuery.length >= 2) {
+                if (cityResults.isEmpty() && !citySearching) {
+                    Text(
+                        stringResource(R.string.settings_no_results),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                cityResults.forEach { result ->
+                    val label = buildString {
+                        append(result.name)
+                        if (result.country.isNotBlank()) append(", ${result.country}")
+                        if (result.admin1.isNotBlank()) append(" (${result.admin1})")
+                    }
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                nameText = result.name
+                                latText = result.latitude.toString()
+                                lonText = result.longitude.toString()
+                                cityQuery = ""
+                                cityResults = emptyList()
+                                scope.launch {
+                                    prefs.saveLocation(
+                                        result.latitude,
+                                        result.longitude,
+                                        result.name
+                                    )
+                                    onScheduleWorker(selectedRefresh)
+                                    snackbarHostState.showSnackbar(
+                                        context.getString(R.string.snack_location_saved)
+                                    )
+                                }
+                            }
+                            .padding(vertical = 8.dp, horizontal = 4.dp)
+                    )
+                    HorizontalDivider()
+                }
+            }
 
             // GPS button
             OutlinedButton(
@@ -361,6 +490,61 @@ fun ConfigScreen(
                     valueRange = 20f..80f,
                     steps = 5
                 )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // --- Language section ---
+            Text(stringResource(R.string.settings_language), style = MaterialTheme.typography.titleSmall)
+
+            val languageOptions = listOf("system", "fr", "en")
+            val languageLabels = listOf(
+                stringResource(R.string.settings_language_system),
+                stringResource(R.string.settings_language_fr),
+                stringResource(R.string.settings_language_en)
+            )
+            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                languageOptions.forEachIndexed { index, lang ->
+                    SegmentedButton(
+                        selected = selectedLanguage == lang,
+                        onClick = {
+                            selectedLanguage = lang
+                            scope.launch {
+                                prefs.saveLanguage(lang)
+                                onLanguageChange(lang)
+                            }
+                        },
+                        shape = SegmentedButtonDefaults.itemShape(index, languageOptions.size)
+                    ) {
+                        Text(languageLabels[index])
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // --- Theme section ---
+            Text(stringResource(R.string.settings_theme), style = MaterialTheme.typography.titleSmall)
+
+            val themeOptions = listOf("system", "light", "dark")
+            val themeLabels = listOf(
+                stringResource(R.string.settings_theme_system),
+                stringResource(R.string.settings_theme_light),
+                stringResource(R.string.settings_theme_dark)
+            )
+            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                themeOptions.forEachIndexed { index, theme ->
+                    SegmentedButton(
+                        selected = selectedTheme == theme,
+                        onClick = {
+                            selectedTheme = theme
+                            scope.launch { prefs.saveTheme(theme) }
+                        },
+                        shape = SegmentedButtonDefaults.itemShape(index, themeOptions.size)
+                    ) {
+                        Text(themeLabels[index])
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))

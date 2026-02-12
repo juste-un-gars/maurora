@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Widget 1x1: Aurora probability only -->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/widget_background"
+    android:padding="4dp">
+
+    <!-- App label -->
+    <TextView
+        android:id="@+id/tv_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:text="Aurora"
+        android:textColor="@color/widget_text_secondary"
+        android:textSize="10sp" />
+
+    <!-- Aurora probability percentage (color-coded) -->
+    <TextView
+        android:id="@+id/tv_probability"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:text="--"
+        android:textColor="@color/widget_text"
+        android:textSize="28sp"
+        android:textStyle="bold" />
+
+</RelativeLayout>

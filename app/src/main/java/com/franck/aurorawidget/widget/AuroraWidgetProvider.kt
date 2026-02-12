@@ -53,6 +53,29 @@ class AuroraWidgetProvider : AppWidgetProvider() {
     companion object {
         private val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
 
+        fun updateMiniWidget(
+            context: Context,
+            appWidgetManager: AppWidgetManager,
+            widgetId: Int,
+            data: WidgetDisplayData = WidgetDisplayData()
+        ) {
+            val views = RemoteViews(context.packageName, R.layout.widget_aurora_mini)
+            val score = data.visibilityScore ?: data.auroraProbability
+
+            if (score != null) {
+                val pct = score.toInt()
+                views.setTextViewText(R.id.tv_probability, "$pct%")
+                views.setTextColor(R.id.tv_probability, getColorForScore(context, pct))
+            } else {
+                views.setTextViewText(R.id.tv_probability, "--")
+                views.setTextColor(R.id.tv_probability, context.getColor(R.color.widget_text))
+            }
+
+            views.setOnClickPendingIntent(R.id.widget_root, configPendingIntent(context))
+            appWidgetManager.updateAppWidget(widgetId, views)
+            Timber.d("Mini widget %d updated: score=%s", widgetId, score?.let { "%.1f%%".format(it) } ?: "null")
+        }
+
         fun updateSmallWidget(
             context: Context,
             appWidgetManager: AppWidgetManager,
@@ -241,6 +264,24 @@ class AuroraWidgetProvider : AppWidgetProvider() {
                 else -> R.color.aurora_go_outside
             }
             return context.getColor(colorRes)
+        }
+    }
+}
+
+/**
+ * Provides the mini (1x1) Aurora widget.
+ * Displays aurora probability only.
+ */
+class AuroraMiniWidgetProvider : AppWidgetProvider() {
+
+    override fun onUpdate(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetIds: IntArray
+    ) {
+        Timber.d("Mini widget onUpdate: %d widget(s)", appWidgetIds.size)
+        for (widgetId in appWidgetIds) {
+            AuroraWidgetProvider.updateMiniWidget(context, appWidgetManager, widgetId)
         }
     }
 }

@@ -16,7 +16,8 @@
 | 005 | Phase 4 - Notifications | Complete | main |
 | 006 | Dashboard UI Restructure | Complete | main |
 | 007 | Phase 5 - Polish | Complete | main |
-| 008 | i18n (FR + EN) | In Progress | main |
+| 008 | i18n (FR + EN) | Complete | main |
+| 009 | City Search (Geocoding) | Complete | main |
 
 ## Build Order Progress
 
@@ -74,7 +75,14 @@
 - [x] DashboardScreen.kt — stringResource() (build OK 2026-02-11)
 - [x] WeatherSection.kt — stringResource() (build OK 2026-02-11)
 - [x] MainActivity.kt — stringResource() + context.getString() (build OK 2026-02-11)
-- [ ] REVIEW: validation manuelle FR/EN sur device (en attente)
+- [x] REVIEW: validation manuelle FR/EN sur device (validated 2026-02-12)
+
+### Post-Phase: City Search / Geocoding (Session 009)
+- [x] GeocodingData.kt — data models (build OK 2026-02-12)
+- [x] GeocodingRepository.kt — Open-Meteo geocoding API (build OK 2026-02-12)
+- [x] MainActivity.kt — city search UI with debounce (build OK 2026-02-12)
+- [x] strings.xml EN/FR — search strings (build OK 2026-02-12)
+- [x] REVIEW: city search validated on device (validated 2026-02-12)
 
 ## Known Issues
 - ~~**Launcher icon:** Fixed — adaptive icon XML pointe maintenant vers maurora.png foreground~~

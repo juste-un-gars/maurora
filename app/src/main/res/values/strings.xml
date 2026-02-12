@@ -4,6 +4,7 @@
     <string name="app_name">Maurora</string>
 
     <!-- Widget descriptions -->
+    <string name="widget_mini_description">Aurora probability (compact)</string>
     <string name="widget_description">Aurora borealis observation probability</string>
     <string name="widget_medium_description">Aurora visibility with weather conditions</string>
     <string name="widget_large_description">Aurora visibility with 3-day Kp forecast graph</string>
@@ -75,6 +76,9 @@
     <string name="settings_title">Settings</string>
     <string name="settings_back">Back</string>
     <string name="settings_location">Location</string>
+    <string name="settings_search_city">Search city</string>
+    <string name="settings_search_placeholder">e.g. Paris, Tromso…</string>
+    <string name="settings_no_results">No results</string>
     <string name="settings_use_gps">Use GPS location</string>
     <string name="settings_or_manual">— or enter manually —</string>
     <string name="settings_location_name">Location name</string>
@@ -91,6 +95,18 @@
     <string name="settings_notif_on">Notifications: ON (threshold %1$d%%)</string>
     <string name="settings_notif_off">Notifications: OFF</string>
     <string name="settings_summary">%1$s (%2$s, %3$s)\nRefresh: every %4$d min\n%5$s</string>
+
+    <!-- Language settings -->
+    <string name="settings_language">Language</string>
+    <string name="settings_language_system">System</string>
+    <string name="settings_language_fr">Francais</string>
+    <string name="settings_language_en">English</string>
+
+    <!-- Theme settings -->
+    <string name="settings_theme">Theme</string>
+    <string name="settings_theme_system">System</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
 
     <!-- Snackbar messages -->
     <string name="snack_gps">GPS: %1$s</string>

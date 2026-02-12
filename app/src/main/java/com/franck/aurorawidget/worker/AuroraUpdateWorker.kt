@@ -24,6 +24,7 @@ import com.franck.aurorawidget.data.remote.WeatherRepository
 import com.franck.aurorawidget.notification.AuroraNotifier
 import com.franck.aurorawidget.widget.AuroraLargeWidgetProvider
 import com.franck.aurorawidget.widget.AuroraMediumWidgetProvider
+import com.franck.aurorawidget.widget.AuroraMiniWidgetProvider
 import com.franck.aurorawidget.widget.AuroraWidgetProvider
 import com.franck.aurorawidget.widget.WidgetDisplayData
 import timber.log.Timber
@@ -167,6 +168,15 @@ class AuroraUpdateWorker(
     private fun updateAllWidgets(data: WidgetDisplayData) {
         val context = applicationContext
         val appWidgetManager = AppWidgetManager.getInstance(context)
+
+        // Update mini widgets (1x1)
+        val miniIds = appWidgetManager.getAppWidgetIds(
+            ComponentName(context, AuroraMiniWidgetProvider::class.java)
+        )
+        Timber.d("Updating %d mini widget(s)", miniIds.size)
+        for (id in miniIds) {
+            AuroraWidgetProvider.updateMiniWidget(context, appWidgetManager, id, data)
+        }
 
         // Update small widgets (2x1)
         val smallIds = appWidgetManager.getAppWidgetIds(

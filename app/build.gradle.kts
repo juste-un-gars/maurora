@@ -1,8 +1,17 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.kotlin.compose)
+}
+
+val localProps = rootProject.file("local.properties")
+val releaseProps = Properties()
+if (localProps.exists()) {
+    releaseProps.load(FileInputStream(localProps))
 }
 
 android {
@@ -19,10 +28,20 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = file(releaseProps.getProperty("RELEASE_STORE_FILE", "../keystore.jks"))
+            storePassword = releaseProps.getProperty("RELEASE_STORE_PASSWORD", "")
+            keyAlias = releaseProps.getProperty("RELEASE_KEY_ALIAS", "")
+            keyPassword = releaseProps.getProperty("RELEASE_KEY_PASSWORD", "")
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
